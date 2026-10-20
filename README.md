@@ -18,6 +18,13 @@
 # Dependencies
 
 - `bash`, `curl`, `tar`, and [POSIX utilities](https://pubs.opengroup.org/onlinepubs/9699919799/idx/utilities.html).
+- On Linux, upstream [mint](https://github.com/yonaskolb/Mint) does not publish a
+  prebuilt binary, so this plugin builds it from source instead. You'll additionally
+  need `git` and a Swift toolchain (Swift 5.9+) available in `PATH` — e.g. via
+  `mise use -g swift@latest` or `asdf plugin add swift`.
+  Per [mint's own Linux notes](https://github.com/yonaskolb/Mint#linux), the Swift
+  runtime must stay installed at run time too (Linux builds aren't statically linked),
+  and package/executable names are case-sensitive.
 
 # Install
 
