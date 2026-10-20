@@ -12,6 +12,8 @@
 - [Contents](#contents)
 - [Dependencies](#dependencies)
 - [Install](#install)
+  - [asdf](#asdf)
+  - [mise](#mise)
 - [Contributing](#contributing)
 - [License](#license)
 
@@ -27,6 +29,8 @@
   and package/executable names are case-sensitive.
 
 # Install
+
+## asdf
 
 Plugin:
 
@@ -54,6 +58,34 @@ mint --help
 
 Check [asdf](https://github.com/asdf-vm/asdf) readme for more instructions on how to
 install & manage versions.
+
+## mise
+
+[mise](https://mise.jdx.dev) consumes asdf plugins directly, so this plugin works
+there unchanged on both macOS and Linux:
+
+```shell
+# Add the plugin (not in the mise/asdf registry, so pass the git url)
+mise plugin add mint https://github.com/amine2233/asdf-mint.git
+
+# Show all installable versions
+mise ls-remote mint
+
+# Install specific version
+mise install mint@latest
+
+# Set a version globally (in ~/.config/mise/config.toml)
+mise use -g mint@latest
+
+# Or pin it per-project (writes/updates mise.toml)
+mise use mint@latest
+
+# Now mint commands are available
+mint --help
+```
+
+Check [mise's plugin docs](https://mise.jdx.dev/plugins.html) for more instructions
+on how to install & manage versions.
 
 # Contributing
 
