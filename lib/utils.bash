@@ -29,15 +29,57 @@ list_all_versions_sorted() {
 	list_github_tags_sorted
 }
 
-download_release() {
-	local version filename url
-	version="$1"
-	filename="$2"
+get_os() {
+	case "$(uname -s)" in
+	Darwin) echo "darwin" ;;
+	Linux) echo "linux" ;;
+	*) fail "asdf-$TOOL_NAME: unsupported OS $(uname -s)" ;;
+	esac
+}
 
+download_release() {
+	local version download_path
+	version="$1"
+	download_path="$2"
+
+	case "$(get_os)" in
+	darwin) download_release_macos "$version" "$download_path" ;;
+	linux) build_release_linux "$version" "$download_path" ;;
+	esac
+}
+
+download_release_macos() {
+	local version download_path filename url
+	version="$1"
+	download_path="$2"
+	filename="$download_path/mint.zip"
 	url="$GH_REPO/releases/download/${version}/mint.zip"
 
 	echo "* Downloading $TOOL_NAME release $version..."
 	curl "${curl_opts[@]}" -o "$filename" -C - "$url" || fail "Could not download $url"
+
+	unzip -o "$filename" -d "$download_path" >/dev/null || fail "Could not extract $filename"
+	rm "$filename"
+}
+
+build_release_linux() {
+	local version download_path src_dir
+	version="$1"
+	download_path="$2"
+	src_dir="$download_path/src"
+
+	command -v swift >/dev/null 2>&1 || fail "Swift toolchain not found in PATH. Install it first (e.g. 'mise use -g swift@latest' or 'asdf plugin add swift') before installing $TOOL_NAME on Linux."
+	command -v git >/dev/null 2>&1 || fail "git is required to build $TOOL_NAME from source on Linux."
+
+	echo "* No prebuilt Linux binary is published for $TOOL_NAME $version; building from source..."
+	git clone --quiet --branch "$version" --depth 1 "$GH_REPO" "$src_dir" 2>/dev/null ||
+		git clone --quiet --branch "v$version" --depth 1 "$GH_REPO" "$src_dir" ||
+		fail "Could not clone $GH_REPO at tag $version or v$version"
+
+	(cd "$src_dir" && swift build -c release) || fail "swift build failed for $TOOL_NAME $version"
+
+	install -m 755 "$src_dir/.build/release/mint" "$download_path/mint" || fail "Could not install built $TOOL_NAME binary"
+	rm -rf "$src_dir"
 }
 
 install_version() {
